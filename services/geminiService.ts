@@ -1,11 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { AppData } from "../types";
 
-// Note: In a real production app, this call should likely go through a backend to secure the API Key.
-// For this frontend-only demo, we use the env variable directly as instructed.
-
-const API_KEY = process.env.API_KEY || '';
-
 export interface ReportAnalysisResult {
   fullText: string;
   presentationScript: string;
@@ -15,18 +10,22 @@ export interface ReportAnalysisResult {
 }
 
 export const generateReportAnalysis = async (data: AppData, month: string): Promise<ReportAnalysisResult> => {
-  if (!API_KEY) {
+  // Access API key strictly from process.env.API_KEY as per guidelines
+  const apiKey = process.env.API_KEY;
+
+  if (!apiKey) {
+    console.warn("API Key not found in process.env.API_KEY");
     return {
         fullText: "Erro: API Key não configurada.",
-        presentationScript: "Não foi possível gerar o roteiro.",
-        executiveSummary: "Não foi possível gerar o resumo.",
+        presentationScript: "Não foi possível gerar o roteiro. Chave de API ausente.",
+        executiveSummary: "Não foi possível gerar o resumo. Verifique as configurações.",
         trendsAndAnomalies: "Indisponível.",
         strategicRecommendations: "Indisponível."
     };
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
 
     // Calculate advanced metrics for the AI
     const totalAttendance = data.services.reduce((acc, s) => acc + s.total, 0);
@@ -116,7 +115,7 @@ export const generateReportAnalysis = async (data: AppData, month: string): Prom
     console.error("Gemini Error:", error);
     return {
         fullText: "",
-        presentationScript: "Erro ao gerar roteiro. Verifique a conexão.",
+        presentationScript: "Erro ao gerar roteiro. Verifique a conexão e a chave de API.",
         executiveSummary: "Erro na geração do relatório.",
         trendsAndAnomalies: "",
         strategicRecommendations: ""
