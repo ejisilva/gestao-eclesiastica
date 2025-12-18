@@ -235,9 +235,10 @@ export const Counseling = () => {
                              <td className="px-6 py-4">
                                  <div className="flex items-center">
                                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs mr-3">
-                                         {session.memberName.charAt(0)}
+                                         {/* Safe check: if memberName is missing, show '?' */}
+                                         {session.memberName ? session.memberName.charAt(0) : '?'}
                                      </div>
-                                     <span className="text-sm font-semibold text-slate-700">{session.memberName}</span>
+                                     <span className="text-sm font-semibold text-slate-700">{session.memberName || 'Nome Indisponível'}</span>
                                  </div>
                              </td>
                              <td className="px-6 py-4 text-sm text-slate-500">{new Date(session.date).toLocaleDateString('pt-BR')}</td>

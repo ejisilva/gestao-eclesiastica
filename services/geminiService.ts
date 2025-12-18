@@ -10,14 +10,14 @@ export interface ReportAnalysisResult {
 }
 
 export const generateReportAnalysis = async (data: AppData, month: string): Promise<ReportAnalysisResult> => {
-  // Access API key strictly from process.env.API_KEY as per guidelines
+  // Access API key. Vite will replace 'process.env.API_KEY' with the string value at build time.
   const apiKey = process.env.API_KEY;
 
-  if (!apiKey) {
-    console.warn("API Key not found in process.env.API_KEY");
+  if (!apiKey || apiKey === '') {
+    console.warn("API Key not found. Please ensure process.env.API_KEY is set.");
     return {
         fullText: "Erro: API Key não configurada.",
-        presentationScript: "Não foi possível gerar o roteiro. Chave de API ausente.",
+        presentationScript: "Não foi possível gerar o roteiro. Chave de API ausente ou inválida.",
         executiveSummary: "Não foi possível gerar o resumo. Verifique as configurações.",
         trendsAndAnomalies: "Indisponível.",
         strategicRecommendations: "Indisponível."

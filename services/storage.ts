@@ -7,6 +7,17 @@ const getUserId = async () => {
   return session?.user?.id;
 };
 
+// Robust UUID generator that works in all contexts (including HTTP)
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 export const db = {
   // Load all data for the current user
   load: async (): Promise<AppData> => {
@@ -18,10 +29,22 @@ export const db = {
         supabase.from('activities').select('*')
       ]);
 
+      // Mapeamento explícito para Counseling (snake_case -> camelCase)
+      // O banco retorna member_name, o app espera memberName
+      const mappedCounseling = (counseling.data || []).map((c: any) => ({
+        id: c.id,
+        date: c.date,
+        memberId: c.member_id, // snake_case do DB
+        memberName: c.member_name, // snake_case do DB
+        memberPhone: c.member_phone, // snake_case do DB
+        notes: c.notes,
+        resolved: c.resolved
+      }));
+
       return {
         services: services.data || [],
         members: members.data || [],
-        counseling: counseling.data || [],
+        counseling: mappedCounseling,
         activities: activities.data || []
       };
     } catch (e) {
@@ -101,8 +124,8 @@ export const db = {
     if (error) console.error("Error deleting activity", error);
   },
 
-  // Helper to generate IDs (UUID v4-like for frontend optimistically)
+  // Helper to generate IDs
   generateId: (): string => {
-    return crypto.randomUUID();
+    return generateUUID();
   }
 };
