@@ -10,11 +10,11 @@ export interface ReportAnalysisResult {
 }
 
 export const generateReportAnalysis = async (data: AppData, month: string): Promise<ReportAnalysisResult> => {
-  // Access API key. Vite will replace 'process.env.API_KEY' with the string value at build time.
-  const apiKey = process.env.API_KEY;
+  // Access API key. Vite will replace 'process.env.GEMINI_API_KEY' with the string value at build time.
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey || apiKey === '') {
-    console.warn("API Key not found. Please ensure process.env.API_KEY is set.");
+    console.warn("API Key not found. Please ensure process.env.GEMINI_API_KEY is set.");
     return {
         fullText: "Erro: API Key não configurada.",
         presentationScript: "Não foi possível gerar o roteiro. Chave de API ausente ou inválida.",
@@ -96,7 +96,7 @@ export const generateReportAnalysis = async (data: AppData, month: string): Prom
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
     });
 
