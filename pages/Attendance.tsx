@@ -5,7 +5,7 @@ import { db } from '../services/storage';
 import { Plus, Trash2, Calendar, Users, Video, X } from 'lucide-react';
 
 const initialDemographics: Demographics = {
-  men: 0, women: 0, adolescents: 0, children: 0, gmeet: 0
+  men: 0, women: 0, adolescents: 0, children: 0, gmeet: 0, newConverts: 0
 };
 
 export const Attendance = () => {
@@ -35,14 +35,26 @@ export const Attendance = () => {
     // Safety check for attendance object
     const currentAttendance = formData.attendance || initialDemographics;
     
-    // Calculate total safely
-    const total = (Object.values(currentAttendance) as number[]).reduce((a, b) => a + b, 0);
+    // Calculate total safely - exluding newConverts as they are already included in standard categories
+    const total = 
+      (currentAttendance.men || 0) + 
+      (currentAttendance.women || 0) + 
+      (currentAttendance.adolescents || 0) + 
+      (currentAttendance.children || 0) + 
+      (currentAttendance.gmeet || 0);
 
     const newRecord: ServiceRecord = {
       id: db.generateId(),
       date: formData.date,
       type: formData.type,
-      attendance: currentAttendance as Demographics,
+      attendance: {
+        men: currentAttendance.men || 0,
+        women: currentAttendance.women || 0,
+        adolescents: currentAttendance.adolescents || 0,
+        children: currentAttendance.children || 0,
+        gmeet: currentAttendance.gmeet || 0,
+        newConverts: currentAttendance.newConverts || 0
+      },
       total,
       notes: formData.notes
     };
@@ -118,18 +130,18 @@ export const Attendance = () => {
 
             <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 mb-8">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 block">Contagem de Membros</label>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                {['men', 'women', 'adolescents', 'children', 'gmeet'].map((key) => (
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
+                {['men', 'women', 'adolescents', 'children', 'gmeet', 'newConverts'].map((key) => (
                     <div key={key} className="relative">
                     <label className="block text-sm font-medium text-slate-600 mb-1.5 capitalize">
-                        {key === 'gmeet' ? 'Online' : key === 'men' ? 'Homens' : key === 'women' ? 'Mulheres' : key === 'children' ? 'Crianças' : 'Adolescentes'}
+                        {key === 'gmeet' ? 'Online' : key === 'men' ? 'Homens' : key === 'women' ? 'Mulheres' : key === 'children' ? 'Crianças' : key === 'adolescents' ? 'Adolescentes' : 'Novos Convertidos'}
                     </label>
                     <div className="relative">
                         <input 
                             type="number" 
                             min="0"
                             className="w-full pl-3 pr-3 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-center font-bold text-slate-800"
-                            value={formData.attendance?.[key as keyof Demographics] || 0}
+                            value={formData.attendance?.[key as keyof Demographics] ?? 0}
                             onChange={(e) => handleInputChange(key as keyof Demographics, e.target.value)}
                         />
                         {key === 'gmeet' && <Video size={14} className="absolute right-3 top-3 text-slate-400" />}
@@ -178,20 +190,28 @@ export const Attendance = () => {
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                       ${service.type === ServiceType.CULTO_DOMINGO ? 'bg-violet-100 text-violet-700' : 
+                        service.type === ServiceType.CULTO_MULHERES ? 'bg-pink-100 text-pink-700' :
                         service.type === ServiceType.JORNADA ? 'bg-amber-100 text-amber-700' :
                         'bg-blue-100 text-blue-700'}`}>
                       {service.type}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-center text-slate-500">
-                    <div className="flex justify-center space-x-2 text-xs">
-                        <span title="Homens">H:{service.attendance.men}</span>
-                        <span className="text-slate-300">|</span>
-                        <span title="Mulheres">M:{service.attendance.women}</span>
-                        <span className="text-slate-300">|</span>
-                        <span title="Adolescentes">A:{service.attendance.adolescents}</span>
-                        <span className="text-slate-300">|</span>
-                        <span title="Crianças">C:{service.attendance.children}</span>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex justify-center space-x-2 text-xs">
+                          <span title="Homens">H:{service.attendance.men || 0}</span>
+                          <span className="text-slate-300">|</span>
+                          <span title="Mulheres">M:{service.attendance.women || 0}</span>
+                          <span className="text-slate-300">|</span>
+                          <span title="Adolescentes">A:{service.attendance.adolescents || 0}</span>
+                          <span className="text-slate-300">|</span>
+                          <span title="Crianças">C:{service.attendance.children || 0}</span>
+                      </div>
+                      {(service.attendance.newConverts ?? 0) > 0 && (
+                        <div className="text-[10px] px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded font-semibold whitespace-nowrap">
+                          Novos Convertidos: {service.attendance.newConverts}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-center">

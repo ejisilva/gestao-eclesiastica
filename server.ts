@@ -43,12 +43,13 @@ async function startServer() {
       
       // Demographics breakdown
       const demographics = data.services.reduce((acc, s) => ({
-          men: acc.men + s.attendance.men,
-          women: acc.women + s.attendance.women,
-          adolescents: acc.adolescents + s.attendance.adolescents,
-          children: acc.children + s.attendance.children,
-          online: acc.online + s.attendance.gmeet
-      }), { men: 0, women: 0, adolescents: 0, children: 0, online: 0 });
+          men: acc.men + (s.attendance.men || 0),
+          women: acc.women + (s.attendance.women || 0),
+          adolescents: acc.adolescents + (s.attendance.adolescents || 0),
+          children: acc.children + (s.attendance.children || 0),
+          online: acc.online + (s.attendance.gmeet || 0),
+          newConverts: acc.newConverts + (s.attendance.newConverts || 0)
+      }), { men: 0, women: 0, adolescents: 0, children: 0, online: 0, newConverts: 0 });
 
       const totalDemographics = demographics.men + demographics.women + demographics.adolescents + demographics.children;
       const percentages = {
@@ -66,6 +67,12 @@ async function startServer() {
           totalServices: data.services.length,
           totalAttendance,
           avgAttendance,
+          totalNewConverts: demographics.newConverts, // Geral de novos convertidos
+          individualServicesNewConverts: data.services.map(s => ({
+              date: s.date,
+              type: s.type,
+              newConverts: s.attendance.newConverts || 0
+          })),
           demographicsRaw: demographics,
           demographicsPercent: percentages,
           counseling: {
@@ -87,22 +94,22 @@ async function startServer() {
         Use tom profissional, corporativo, direto e elegante. Não use markdown (negrito/italico) dentro das seções, apenas texto puro.
 
         Seção 1: ROTEIRO DE APRESENTAÇÃO
-        Escreva um discurso pronto para ser lido pelo líder na reunião. Deve ser envolvente, começar saudando os presentes, destacar as vitórias (números altos), reconhecer desafios (se houver) e terminar com uma mensagem motivacional baseada nos dados. Use 1ª pessoa do plural ("Nós").
+        Escreva um discurso pronto para ser lido pelo líder na reunião. Deve ser envolvente, começar saudando os presentes, destacar as vitórias (como o número total de presentes, crescimento de cultos e os Novos Convertidos que aceitaram a Cristo ou visitaram pela primeira vez), reconhecer desafios (se houver) e terminar com uma mensagem motivacional. Mencione especificamente o total de novos convertidos do mês. Use 1ª pessoa do plural ("Nós").
 
         |||
 
         Seção 2: RESUMO EXECUTIVO
-        Um parágrafo denso e formal resumindo o desempenho geral do mês. Foco em eficiência e crescimento.
+        Um parágrafo denso e formal resumindo o desempenho geral do mês. Sempre inclua o total mensal de novos convertidos ("Novos Convertidos no mês: X") e o número de cultos realizados. Foco em eficiência e crescimento.
 
         |||
 
         Seção 3: TENDÊNCIAS E ANOMALIAS
-        Analise a demografia (Homens vs Mulheres vs Adolescentes) e a frequência. Aponte se o engajamento online está alto ou baixo. Identifique padrões.
+        Analise a demografia (Homens vs Mulheres vs Adolescentes), novos convertidos e frequência. Cite cultos específicos que se destacaram com o maior número de novos convertidos individuais. Aponte se o engajamento online está alto ou baixo. Identifique padrões.
 
         |||
 
         Seção 4: RECOMENDAÇÕES ESTRATÉGICAS
-        3 ações práticas e numeradas para a liderança implementar no próximo mês visando melhoria dos números.
+        3 ações práticas e numeradas para a liderança implementar no próximo mês visando a melhoria dos números de frequência, acompanhamento dos Novos Convertidos e consolidação.
       `;
 
       // basic text task uses gemini-3.5-flash

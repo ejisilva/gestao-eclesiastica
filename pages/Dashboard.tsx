@@ -29,8 +29,9 @@ export const Dashboard = () => {
     const avgAttendance = data.services.length ? Math.round(totalAttendance / data.services.length) : 0;
     const counselingCount = data.counseling.length;
     const activitiesCount = data.activities.length;
+    const totalNewConverts = data.services.reduce((acc, curr) => acc + (curr.attendance?.newConverts || 0), 0);
     
-    return { totalAttendance, avgAttendance, counselingCount, activitiesCount };
+    return { totalAttendance, avgAttendance, counselingCount, activitiesCount, totalNewConverts };
   }, [data]);
 
   const demographicData = useMemo(() => {
@@ -70,10 +71,10 @@ export const Dashboard = () => {
         <StatCard 
           title="Frequência Mensal" 
           value={stats.totalAttendance} 
-          subtext="Total acumulado no mês"
+          subtext={`Frequência geral acumulada no mês. (${stats.totalNewConverts} novos convertidos)`}
           icon={Users}
           color="bg-indigo-500"
-          trend="+12%"
+          trend={stats.totalNewConverts > 0 ? `+${stats.totalNewConverts} novos` : undefined}
         />
         <StatCard 
           title="Média por Culto" 
@@ -106,9 +107,10 @@ export const Dashboard = () => {
                 <h3 className="text-lg font-bold text-slate-800">Tendência de Frequência</h3>
                 <p className="text-slate-400 text-sm">Acompanhamento dos últimos cultos</p>
             </div>
-            <div className="flex space-x-2">
-                <span className="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span><span className="text-xs text-slate-500">Total</span>
-                <span className="w-3 h-3 rounded-full bg-indigo-200 inline-block ml-2"></span><span className="text-xs text-slate-500">Online</span>
+            <div className="flex flex-wrap items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span><span className="text-xs text-slate-500">Presencial/Total</span>
+                <span className="w-3 h-3 rounded-full bg-indigo-200 inline-block"></span><span className="text-xs text-slate-500">Online</span>
+                <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span className="text-xs text-slate-500">Novos Convertidos</span>
             </div>
           </div>
           <div className="h-[350px] w-full">
@@ -131,8 +133,9 @@ export const Dashboard = () => {
                 />
                 <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" name="Presencial" activeDot={{r: 6, strokeWidth: 0}} />
-                <Area type="monotone" dataKey="attendance.gmeet" stroke="#c7d2fe" strokeWidth={2} fill="transparent" strokeDasharray="5 5" name="Online" />
+                <Area type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" name="Público Presencial" activeDot={{r: 6, strokeWidth: 0}} />
+                <Area type="monotone" dataKey="attendance.gmeet" stroke="#c7d2fe" strokeWidth={2} fill="transparent" strokeDasharray="5 5" name="Público Online" />
+                <Area type="monotone" dataKey="attendance.newConverts" stroke="#10b981" strokeWidth={2} fill="transparent" name="Novos Convertidos" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

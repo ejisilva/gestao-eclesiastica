@@ -41,8 +41,20 @@ export const db = {
         resolved: c.resolved
       }));
 
+      const mappedServices = (services.data || []).map((s: any) => ({
+        ...s,
+        attendance: {
+          men: Number(s.attendance?.men || 0),
+          women: Number(s.attendance?.women || 0),
+          adolescents: Number(s.attendance?.adolescents || 0),
+          children: Number(s.attendance?.children || 0),
+          gmeet: Number(s.attendance?.gmeet || 0),
+          newConverts: Number(s.attendance?.newConverts || 0)
+        }
+      }));
+
       return {
-        services: services.data || [],
+        services: mappedServices,
         members: members.data || [],
         counseling: mappedCounseling,
         activities: activities.data || []

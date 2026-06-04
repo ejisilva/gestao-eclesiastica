@@ -2,6 +2,7 @@
 export enum ServiceType {
   CULTO_QUARTA = 'Culto de Quarta',
   CULTO_DOMINGO = 'Culto de Domingo',
+  CULTO_MULHERES = 'Culto das Mulheres',
   VIGILIA = 'Vigília',
   JORNADA = 'Jornada de Oração'
 }
@@ -20,6 +21,7 @@ export interface Demographics {
   adolescents: number;
   children: number;
   gmeet: number;
+  newConverts: number;
 }
 
 export interface ServiceRecord {

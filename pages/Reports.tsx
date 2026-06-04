@@ -175,31 +175,37 @@ export const Reports = () => {
     const drawMetric = (x: number, label: string, value: string, sub: string) => {
         doc.setFillColor(248, 250, 252); // Slate 50
         doc.setDrawColor(226, 232, 240); // Slate 200
-        doc.roundedRect(x, metricsY, boxWidth, boxHeight, 3, 3, 'FD');
+        const metricBoxWidth = 36;
+        doc.roundedRect(x, metricsY, metricBoxWidth, boxHeight, 3, 3, 'FD');
         
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
+        doc.setFontSize(7.5);
         doc.setTextColor(100, 116, 139);
-        doc.text(label.toUpperCase(), x + 5, metricsY + 8);
+        doc.text(label.toUpperCase(), x + 3, metricsY + 8);
         
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
+        doc.setFontSize(13);
         doc.setTextColor(15, 23, 42); // Slate 900
-        doc.text(value, x + 5, metricsY + 18);
+        doc.text(value, x + 3, metricsY + 17);
 
-        doc.setFontSize(7);
+        doc.setFontSize(6.5);
         doc.setTextColor(79, 70, 229);
-        doc.text(sub, x + boxWidth - 5, metricsY + 18, { align: 'right' });
+        doc.text(sub, x + metricBoxWidth - 3, metricsY + 17, { align: 'right' });
     };
 
     const totalAttendance = filteredData.services.reduce((acc, s) => acc + s.total, 0);
     const avgAttendance = filteredData.services.length ? Math.round(totalAttendance / filteredData.services.length) : 0;
     const resolvedCounseling = filteredData.counseling.filter(c => c.resolved).length;
+    const totalNewConverts = filteredData.services.reduce((acc, s) => acc + (s.attendance?.newConverts || 0), 0);
     
+    const metricBoxWidth = 36;
+    const metricGap = 3;
+
     drawMetric(startX, "Total Cultos", filteredData.services.length.toString(), "Eventos");
-    drawMetric(startX + boxWidth + gap, "Frequência Total", totalAttendance.toString(), "Pessoas");
-    drawMetric(startX + (boxWidth + gap) * 2, "Média/Culto", avgAttendance.toString(), "Pessoas");
-    drawMetric(startX + (boxWidth + gap) * 3, "Atendimentos", filteredData.counseling.length.toString(), `${resolvedCounseling} Resolvidos`);
+    drawMetric(startX + metricBoxWidth + metricGap, "Frequência Total", totalAttendance.toString(), "Pessoas");
+    drawMetric(startX + (metricBoxWidth + metricGap) * 2, "Média/Culto", avgAttendance.toString(), "Pessoas");
+    drawMetric(startX + (metricBoxWidth + metricGap) * 3, "Novos Conv.", totalNewConverts.toString(), "Convertidos");
+    drawMetric(startX + (metricBoxWidth + metricGap) * 4, "Atendimentos", filteredData.counseling.length.toString(), `${resolvedCounseling} Resolvidos`);
 
     // AI Sections
     let currentY = metricsY + boxHeight + 15;
@@ -241,22 +247,23 @@ export const Reports = () => {
 
     autoTable(doc, {
       startY: 50,
-      head: [['Data', 'Tipo', 'Homens', 'Mulh.', 'Jovens', 'Crianças', 'Online', 'Total']],
+      head: [['Data', 'Tipo', 'Homens', 'Mulh.', 'Jovens', 'Crianças', 'N. Conv.', 'Online', 'Total']],
       body: filteredData.services.map(s => [
         new Date(s.date).toLocaleDateString('pt-BR'),
         s.type,
-        s.attendance.men,
-        s.attendance.women,
-        s.attendance.adolescents,
-        s.attendance.children,
-        s.attendance.gmeet,
+        s.attendance.men || 0,
+        s.attendance.women || 0,
+        s.attendance.adolescents || 0,
+        s.attendance.children || 0,
+        s.attendance.newConverts || 0,
+        s.attendance.gmeet || 0,
         s.total
       ]),
       theme: 'grid',
       headStyles: { fillColor: [30, 41, 59], textColor: 255, fontSize: 9, fontStyle: 'bold' },
       styles: { fontSize: 8, cellPadding: 3, textColor: 50 },
       alternateRowStyles: { fillColor: [241, 245, 249] },
-      columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 40 } }
+      columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 35 } }
     });
 
     // Table 2: Activities & Counseling Summary
@@ -388,10 +395,13 @@ export const Reports = () => {
                  </div>
                  <div className="space-y-3">
                     <div className="flex justify-between text-sm text-slate-300">
-                        <span>Cultos:</span> <span className="font-bold">{filteredData.services.length}</span>
+                        <span>Cultos Realizados:</span> <span className="font-bold">{filteredData.services.length}</span>
                     </div>
                     <div className="flex justify-between text-sm text-slate-300">
-                        <span>Atividades:</span> <span className="font-bold">{filteredData.activities.length}</span>
+                        <span>Novos Convertidos:</span> <span className="font-bold text-emerald-400">{filteredData.services.reduce((acc, s) => acc + (s.attendance?.newConverts || 0), 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-slate-300">
+                        <span>Atividades Registradas:</span> <span className="font-bold">{filteredData.activities.length}</span>
                     </div>
                      <div className="h-2 bg-slate-700 rounded-full w-full overflow-hidden mt-2">
                          <div className="h-full bg-indigo-500 w-full animate-pulse"></div>
